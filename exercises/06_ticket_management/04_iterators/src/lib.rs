@@ -1,3 +1,5 @@
+use std::slice::Iter;
+use std::vec::IntoIter;
 use ticket_fields::{TicketDescription, TicketTitle};
 
 // TODO: Let's start sketching our ticket store!
@@ -8,6 +10,15 @@ use ticket_fields::{TicketDescription, TicketTitle};
 #[derive(Clone)]
 pub struct TicketStore {
     tickets: Vec<Ticket>,
+}
+
+impl IntoIterator for TicketStore {
+    type Item = Ticket;
+    type IntoIter = IntoIter<Ticket>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        IntoIterator::into_iter(self.tickets)
+    }
 }
 
 #[derive(Clone, Debug, PartialEq)]
