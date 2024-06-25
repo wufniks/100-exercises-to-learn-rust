@@ -3,7 +3,9 @@
 //  deadlock between the caller and the server.
 //  Use `spawn_blocking` inside `echo` to resolve the issue.
 use std::io::{Read, Write};
+use anyhow::anyhow;
 use tokio::net::TcpListener;
+use tokio::task::spawn_blocking;
 
 pub async fn echo(listener: TcpListener) -> Result<(), anyhow::Error> {
     loop {
@@ -11,10 +13,14 @@ pub async fn echo(listener: TcpListener) -> Result<(), anyhow::Error> {
         let mut socket = socket.into_std()?;
         socket.set_nonblocking(false)?;
         let mut buffer = Vec::new();
-        socket.read_to_end(&mut buffer)?;
-        socket.write_all(&buffer)?;
+        spawn_blocking(move || {
+            socket.read_to_end(&mut buffer)?;
+            socket.write_all(&buffer)?;
+            Ok::<(), anyhow::Error>(())
+        });
     }
 }
+
 
 #[cfg(test)]
 mod tests {
